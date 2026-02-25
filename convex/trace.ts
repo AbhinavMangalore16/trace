@@ -49,3 +49,34 @@ export const get = query({
     .collect;
   },
 });
+
+export const getById = query({
+  args: {
+    id: v.id("traces")
+  },
+  handler: async (ctx, args) => {
+    const identity = await verifyIdent(ctx);
+    const trace = await ctx.db.get("traces", args.id);
+    if (!trace) throw new Error("Trace not found!");
+    if (trace.ownerId !== identity.subject){
+      throw new Error("Unauthorized access to this project trace!");
+    }
+    return trace;
+  },
+});
+
+export const rename = mutation({
+  args:{
+    traceId: v.id("traces"),
+    newName: v.string()
+  },
+  handler: async (ctx, args) => {
+    const identity = await verifyIdent(ctx);
+    const trace = await ctx.db.get("traces", args.traceId);
+    if (!trace) throw new Error("Trace not found!");
+    if (trace.ownerId !== identity.subject){
+      throw new Error("Unauthorized access to this project trace!");
+    }
+    await ctx.db.patch(args.traceId, {name: args.newName, updatedAt: Date.now()});
+  }
+})
