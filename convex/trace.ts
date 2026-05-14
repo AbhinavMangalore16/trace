@@ -56,7 +56,7 @@ export const getById = query({
   },
   handler: async (ctx, args) => {
     const identity = await verifyIdent(ctx);
-    const trace = await ctx.db.get("traces", args.id);
+    const trace = await ctx.db.get(args.id);
     if (!trace) throw new Error("Trace not found!");
     if (trace.ownerId !== identity.subject){
       throw new Error("Unauthorized access to this project trace!");
@@ -72,11 +72,26 @@ export const rename = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await verifyIdent(ctx);
-    const trace = await ctx.db.get("traces", args.traceId);
+    const trace = await ctx.db.get(args.traceId);
     if (!trace) throw new Error("Trace not found!");
     if (trace.ownerId !== identity.subject){
       throw new Error("Unauthorized access to this project trace!");
     }
     await ctx.db.patch(args.traceId, {name: args.newName, updatedAt: Date.now()});
+  }
+})
+
+export const remove = mutation({
+  args: {
+    traceId: v.id("traces")
+  },
+  handler: async (ctx, args) => {
+    const identity = await verifyIdent(ctx);
+    const trace = await ctx.db.get(args.traceId);
+    if (!trace) throw new Error("Trace not found!");
+    if (trace.ownerId !== identity.subject){
+      throw new Error("Unauthorized access to this project trace!");
+    }
+    await ctx.db.delete(args.traceId);
   }
 })

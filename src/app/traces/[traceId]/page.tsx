@@ -1,11 +1,15 @@
+import { TraceFlow } from "@/modules/traces/components/trace-flow";
+
 export default async function TracePage({
   params,
 }: {
-  params: { traceId: string };
+  params: Promise<{ traceId: string }>;
 }) {
+  const { traceId } = await params;
+
   return (
-    <div>
-      {params.traceId}
+    <div className="flex-1 w-full relative">
+      <TraceFlow traceId={traceId} />
     </div>
   );
 }

@@ -19,6 +19,7 @@ export const useTraceLimits = (lim: number) =>{
 export const useCreateTrace = () =>{
     return useMutation(api.trace.create).withOptimisticUpdate((localStore, args)=>{
         const existingTraces = localStore.getQuery(api.trace.getQuery, {lim: 10});
+        const existingTraces5 = localStore.getQuery(api.trace.getQuery, {lim: 5});
         if (existingTraces!= undefined){
             const now = Date.now();
             const newTrace = {
@@ -33,6 +34,22 @@ export const useCreateTrace = () =>{
             localStore.setQuery(api.trace.getQuery, {lim: 10}, [
                 newTrace,
                 ...existingTraces,
+            ]);
+        }
+        if (existingTraces5 !== undefined){
+            const now = Date.now();
+            const newTrace = {
+                _id: crypto.randomUUID() as Id<"traces">,
+                _creationTime: now,
+                name: args.name,
+                ownerId: "anonymous",
+                updatedAt: now,
+                importStatus: "Success",
+                exportStatus: "Not Exported"
+            } as const;
+            localStore.setQuery(api.trace.getQuery, {lim: 5}, [
+                newTrace,
+                ...existingTraces5,
             ]);
         }
     });
@@ -54,6 +71,26 @@ export const useRenameTrace = (traceId: Id<"traces">) =>{
                 {...trace, name: args.newName, updatedAt: Date.now()}: trace
             }))
         }
+        const existingTraces5 = localStore.getQuery(api.trace.getQuery, {lim: 5});
+        if (existingTraces5 !== undefined){
+            localStore.setQuery(api.trace.getQuery, {lim: 5}, existingTraces5.map(trace=>{
+                return trace._id === args.traceId?
+                {...trace, name: args.newName, updatedAt: Date.now()}: trace
+            }))
+        }
     }
+    });
+}
+
+export const useDeleteTrace = () => {
+    return useMutation(api.trace.remove).withOptimisticUpdate((localStore, args) => {
+        const existingTraces = localStore.getQuery(api.trace.getQuery, {lim: 10});
+        if (existingTraces !== undefined) {
+             localStore.setQuery(api.trace.getQuery, {lim: 10}, existingTraces.filter(t => t._id !== args.traceId));
+        }
+        const existingTraces5 = localStore.getQuery(api.trace.getQuery, {lim: 5});
+        if (existingTraces5 !== undefined) {
+             localStore.setQuery(api.trace.getQuery, {lim: 5}, existingTraces5.filter(t => t._id !== args.traceId));
+        }
     });
 }
