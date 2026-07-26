@@ -24,7 +24,7 @@ export default function DashboardPage() {
           <EmptyMedia className="size-12 rounded-xl bg-secondary/80 text-foreground [&_svg]:size-6">
             <Layers className="size-6" />
           </EmptyMedia>
-          <EmptyTitle className="text-xl font-semibold tracking-tight">
+          <EmptyTitle className="text-xl font-semibold tracking-wide">
             No cascade selected
           </EmptyTitle>
           <EmptyDescription className="max-w-[280px] text-center text-sm/relaxed text-muted-foreground">

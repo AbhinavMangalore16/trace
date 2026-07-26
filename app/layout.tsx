@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs"
 import { shadcn } from "@clerk/ui/themes"
 import { EB_Garamond, Geist, Geist_Mono } from "next/font/google"
+import "@fontsource/cal-sans"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"

@@ -20,7 +20,7 @@ export function PrismaHero() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-6 max-w-4xl text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="mt-6 max-w-4xl text-4xl font-extrabold tracking-wide text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
           Visual Automation with{" "}
           <span className="bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 bg-clip-text text-transparent">
             Cascades
