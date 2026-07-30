@@ -44,33 +44,33 @@ export default function Footer() {
             <h4 className="text-white/40 text-[10px] uppercase tracking-[0.2em] mb-6 font-semibold">
               Navigation
             </h4>
-            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-normal">
+            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-wide">
               <li>
-                <a href="#features" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#features" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Features
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <Link href="/dashboard" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <Link href="/dashboard" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Cascades
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </Link>
               </li>
               <li>
-                <a href="#pricing" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#pricing" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Pricing
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="#docs" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#docs" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Docs
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="#contact" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#contact" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Contact
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
@@ -82,27 +82,27 @@ export default function Footer() {
             <h4 className="text-white/40 text-[10px] uppercase tracking-[0.2em] mb-6 font-semibold">
               Social
             </h4>
-            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-normal">
+            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-wide">
               <li>
-                <a href="https://twitter.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="https://twitter.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Twitter / X
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="https://github.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="https://github.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   GitHub
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="https://discord.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="https://discord.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Discord
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   LinkedIn
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
@@ -114,15 +114,15 @@ export default function Footer() {
             <h4 className="text-white/40 text-[10px] uppercase tracking-[0.2em] mb-6 font-semibold">
               Legals
             </h4>
-            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-normal">
+            <ul className="space-y-3 text-white text-base md:text-lg font-medium tracking-wide">
               <li>
-                <a href="#" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Privacy Policy
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
               </li>
               <li>
-                <a href="#" className="relative group transition-colors duration-300 hover:text-[#00CBAE]">
+                <a href="#" className="relative group transition-colors duration-300 hover:text-[#53EAFD]">
                   Terms of Service
                   <span className="absolute left-0 -bottom-1 h-[2px] w-full bg-[#FFFFFE] transition-all duration-300 shadow-[0_0_8px_rgba(255,255,255,0.5)] origin-left scale-x-0 group-hover:scale-x-100" />
                 </a>
@@ -133,14 +133,14 @@ export default function Footer() {
 
         {/* Bottom Info Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4 md:gap-0 border-b border-white/10 pb-8 md:pb-10 mb-6 text-xs uppercase tracking-widest text-white/40 text-center md:text-left font-sans">
-          <p>© 2026 DominoFlow AI. All rights reserved.</p>
+          <p>© 2026 DominoFlow. All rights reserved.</p>
           <p className="font-mono">New Delhi → {time || "12:00:00"}</p>
-          <a href="#" className="text-gray-400 hover:text-[#00CBAE] transition-colors">Back to top ↑</a>
+          <a href="#" className="text-gray-400 hover:text-[#53EAFD] transition-colors">Back to top ↑</a>
         </div>
 
-        {/* Massive Brand Name in Cal Sans with tracking-normal */}
+        {/* Massive Brand Name in Cal Sans with tracking-wide */}
         <div className="relative w-full flex justify-center">
-          <h1 className="w-full text-[8vw] md:text-[10.5vw] font-bold text-white tracking-normal leading-none text-center font-cal select-none opacity-90">
+          <h1 className="w-full text-[8vw] md:text-[10.5vw] font-bold text-white tracking-wide leading-none text-center font-cal select-none opacity-90">
             DominoFlow
           </h1>
         </div>

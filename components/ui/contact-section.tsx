@@ -3,6 +3,7 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export function ContactSection() {
   return (
@@ -20,51 +21,48 @@ export function ContactSection() {
 
       <div className="relative z-10 max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
         {/* Left Side: Heading */}
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#00CBAE] bg-[#00CBAE]/10 px-3 py-1 rounded-full border border-[#00CBAE]/30">
-            Get In Touch
-          </span>
-          <h2 className="mt-4 text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-normal leading-none font-cal">
+        <ScrollReveal direction="left">
+          <h2 className="mt-4 text-5xl md:text-7xl lg:text-8xl font-bold text-white tracking-wide leading-none font-cal">
             Got an Idea? <br />
           </h2>
-          <p className="mt-6 text-white/70 text-lg sm:text-xl font-normal tracking-normal leading-relaxed max-w-xl">
-            Let's Brew Something Together. Build your next web automation cascade with DominoFlow AI.
+          <p className="mt-6 text-white/70 text-lg sm:text-xl font-normal tracking-wide leading-relaxed max-w-xl">
+            Let's Brew Something Together. Build your next web automation cascade with DominoFlow.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Right Side: Form */}
-        <div className="space-y-10 w-full">
+        <ScrollReveal direction="right" delay={0.2} className="space-y-10 w-full">
           <div className="space-y-8">
-            <div className="group border-b border-white/20 pb-4 focus-within:border-[#00CBAE] transition-colors">
+            <div className="group border-b border-white/20 pb-4 focus-within:border-[#53EAFD] transition-colors">
               <label className="block text-xs uppercase tracking-widest text-white/80 mb-2 font-medium">Your Name</label>
               <input
                 type="text"
                 placeholder="Alex Morgan"
-                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 text-base tracking-normal"
+                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 text-base tracking-wide"
               />
             </div>
-            <div className="group border-b border-white/20 pb-4 focus-within:border-[#00CBAE] transition-colors">
+            <div className="group border-b border-white/20 pb-4 focus-within:border-[#53EAFD] transition-colors">
               <label className="block text-xs uppercase tracking-widest text-white/80 mb-2 font-medium">Your Email</label>
               <input
                 type="email"
                 placeholder="alex@company.com"
-                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 text-base tracking-normal"
+                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 text-base tracking-wide"
               />
             </div>
-            <div className="group border-b border-white/20 pb-4 focus-within:border-[#00CBAE] transition-colors">
+            <div className="group border-b border-white/20 pb-4 focus-within:border-[#53EAFD] transition-colors">
               <label className="block text-xs uppercase tracking-widest text-white/80 mb-2 font-medium">Workflow Description</label>
               <textarea
                 rows={2}
                 placeholder="Describe the web browser actions or AI workflow you want to automate..."
-                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 resize-none text-base tracking-normal"
+                className="w-full bg-transparent text-white outline-none placeholder:text-white/20 resize-none text-base tracking-wide"
               />
             </div>
           </div>
 
-          <button className="w-full py-4 bg-[#00CBAE] text-slate-950 rounded-full font-bold text-base hover:bg-[#00CBAE]/90 transition-all tracking-normal shadow-[0_0_25px_#00CBAE50] hover:scale-[1.01] active:scale-[0.99]">
+          <button className="w-full py-4 bg-[#53EAFD] text-slate-950 rounded-full font-bold text-base hover:bg-[#53EAFD]/90 transition-all tracking-wide shadow-[0_0_25px_#53EAFD50] hover:scale-[1.01] active:scale-[0.99]">
             Send Now!
           </button>
-        </div>
+        </ScrollReveal>
       </div>
 
       {/* Infinite Email Ticker */}
@@ -89,7 +87,7 @@ export function ContactSection() {
                 <div key={`a-${idx}`} className="flex items-center">
                   <a
                     href="mailto:hello@dominoflow.ai"
-                    className="block px-10 text-3xl md:text-4xl font-bold text-white hover:text-[#00CBAE] transition-colors duration-300 cursor-pointer font-cal tracking-normal"
+                    className="block px-10 text-3xl md:text-4xl font-bold text-white hover:text-[#53EAFD] transition-colors duration-300 cursor-pointer font-cal tracking-wide"
                   >
                     hello@dominoflow.ai
                   </a>
@@ -104,7 +102,7 @@ export function ContactSection() {
                 <div key={`b-${idx}`} className="flex items-center">
                   <a
                     href="mailto:hello@dominoflow.ai"
-                    className="block px-10 text-3xl md:text-4xl font-bold text-white hover:text-[#00CBAE] transition-colors duration-300 cursor-pointer font-cal tracking-normal"
+                    className="block px-10 text-3xl md:text-4xl font-bold text-white hover:text-[#53EAFD] transition-colors duration-300 cursor-pointer font-cal tracking-wide"
                   >
                     hello@dominoflow.ai
                   </a>

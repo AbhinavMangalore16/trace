@@ -14,6 +14,7 @@ import { IntegrationsGridSection } from "@/components/ui/integrations-grid"
 import { PricingSection } from "@/components/ui/pricing-section"
 import { TestimonialsSection } from "@/components/ui/testimonials-section"
 import { ContactSection } from "@/components/ui/contact-section"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import Footer from "@/components/ui/footer"
 
 const CAROUSEL_LOGOS = [
@@ -98,16 +99,16 @@ export default function AceternityDitherHeroPage() {
 
         {/* HERO MAIN CONTENT WITH CAL SANS TYPOGRAPHY */}
         <main className="mx-auto flex flex-col items-center px-6 pt-16 pb-12 text-center lg:pt-24">
-          <div className="flex max-w-4xl flex-col items-center">
+          <ScrollReveal direction="up" distance={30} duration={0.9} className="flex max-w-4xl flex-col items-center">
             {/* Main Headline in Cal Sans */}
-            <h1 className="font-cal text-4xl font-extrabold tracking-normal text-white sm:text-6xl md:text-7xl leading-[1.1]">
-              Go from idea to <br className="hidden sm:inline" />
-              production with AI.
+            <h1 className="font-cal text-2xl font-extrabold tracking-wide text-white sm:text-5xl md:text-[55px] leading-[1.1]">
+              Build autonomous browser agents <br className="hidden sm:inline" />
+              without writing brittle scripts.
             </h1>
 
             {/* Subtitle */}
-            <p className="mt-6 max-w-2xl text-base text-slate-300 sm:text-lg md:text-xl font-normal leading-relaxed">
-              DominoFlow AI helps you get your idea from your mind infront of your customers in minutes.
+            <p className="mt-6 max-w-2xl text-base text-[#E2E8F0] sm:text-lg md:text-xl font-normal leading-relaxed">
+              Design, orchestrate, and deploy self-healing web automation flows using our visual agent canvas.
             </p>
 
             {/* Action Buttons */}
@@ -116,7 +117,7 @@ export default function AceternityDitherHeroPage() {
                 <Button
                   asChild
                   size="lg"
-                  className="rounded-full bg-blue-600 px-7 py-6 text-sm font-semibold text-white shadow-xl transition-all hover:bg-blue-500 hover:scale-[1.02]"
+                  className="rounded-full bg-[#6366F1] px-7 py-6 text-sm font-semibold text-white shadow-xl transition-all hover:bg-blue-500 hover:scale-[1.02]"
                 >
                   <Link href="/sign-up">Start building for free</Link>
                 </Button>
@@ -126,7 +127,7 @@ export default function AceternityDitherHeroPage() {
                 <Button
                   asChild
                   size="lg"
-                  className="rounded-full bg-blue-600 px-7 py-6 text-sm font-semibold text-white shadow-xl transition-all hover:bg-blue-500 hover:scale-[1.02]"
+                  className="rounded-full bg-[#6366F1] px-7 py-6 text-sm font-semibold text-white shadow-xl transition-all hover:bg-blue-500 hover:scale-[1.02]"
                 >
                   <Link href="/dashboard">Go to App Dashboard</Link>
                 </Button>
@@ -144,8 +145,8 @@ export default function AceternityDitherHeroPage() {
 
             {/* Trust Strip with Infinite Image Carousel */}
             <div className="mt-14 flex flex-col items-center gap-6 w-full max-w-4xl overflow-hidden">
-              <p className="text-xs font-medium text-slate-400">
-                Trusted by <span className="font-semibold text-white">69,420+</span> users worldwide.
+              <p className="text-xs font-medium text-white">
+                Trusted by <span className="font-semibold text-white">1M+</span> users worldwide.
               </p>
 
               {/* Infinite Image Carousel Container */}
@@ -158,17 +159,17 @@ export default function AceternityDitherHeroPage() {
                         alt={item.name}
                         width={120}
                         height={36}
-                        className="h-7 w-auto object-contain brightness-0 invert opacity-75 hover:brightness-100 hover:invert-0 hover:opacity-100 transition-all duration-300"
+                        className="h-7 w-auto object-contain opacity-95 hover:opacity-100 hover:scale-105 transition-all duration-300"
                       />
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* EMBEDDED COMPUTER MONITOR SHOWCASE MOCKUP WITH CUSTOM IMAGE */}
-          <div className="mt-16 w-full max-w-5xl px-2 sm:px-6">
+          <ScrollReveal direction="up" distance={45} duration={1.0} delay={0.2} className="mt-16 w-full max-w-5xl px-2 sm:px-6">
             <div className="rounded-2xl border border-white/20 bg-slate-900/90 p-2.5 sm:p-3 shadow-2xl backdrop-blur-xl">
               {/* Fake Window Controls */}
               <div className="flex items-center gap-2 border-b border-white/10 px-3 pb-2.5 text-xs text-slate-400">
@@ -189,7 +190,7 @@ export default function AceternityDitherHeroPage() {
                 />
               </div>
             </div>
-          </div>
+          </ScrollReveal>
         </main>
       </DitherBackground>
 

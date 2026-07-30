@@ -6,6 +6,7 @@ import "@fontsource/cal-sans"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { SmoothScrollProvider } from "@/components/ui/smooth-scroll-provider"
 import { cn } from "@/lib/utils"
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" })
@@ -40,8 +41,10 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <ClerkProvider appearance={{ theme: shadcn }}>
           <ThemeProvider>
-            {children}
-            <Toaster />
+            <SmoothScrollProvider>
+              {children}
+              <Toaster />
+            </SmoothScrollProvider>
           </ThemeProvider>
         </ClerkProvider>
       </body>

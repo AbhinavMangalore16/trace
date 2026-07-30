@@ -156,12 +156,12 @@ export function TestimonialsSection() {
 
           <h2
             id="testimonials-heading"
-            className="mt-4 text-center text-4xl font-extrabold tracking-normal text-white font-cal sm:text-5xl"
+            className="mt-4 text-center text-4xl font-extrabold tracking-wide text-white font-cal sm:text-5xl"
           >
             What our users say
           </h2>
           <p className="mt-4 max-w-lg text-center text-base text-slate-400 leading-relaxed font-normal">
-            Discover how thousands of teams streamline web automation and agent workflows with DominoFlow AI.
+            Discover how thousands of teams streamline web automation and agent workflows with DominoFlow.
           </p>
         </div>
 

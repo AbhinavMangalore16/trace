@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { motion } from "framer-motion"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 interface IntegrationLogo {
   id: string
@@ -109,17 +110,17 @@ export function SeamlessIntegrationSection() {
 
       <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left Column: Title & Description */}
-        <div className="space-y-6 max-w-xl">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-normal leading-[1.1] font-cal">
+        <ScrollReveal direction="left" className="space-y-6 max-w-xl">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-wide leading-[1.1] font-cal">
             Integrate with your favorite tools!
           </h2>
-          <p className="text-slate-400 text-base sm:text-lg leading-relaxed font-normal tracking-normal">
+          <p className="text-slate-400 text-base sm:text-lg leading-relaxed font-normal tracking-wide">
             Integrate with over 100+ tools and platforms to streamline your web automation workflow and boost productivity effortlessly.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Right Column: Isometric Honeycomb Logo Grid */}
-        <div className="relative flex justify-center items-center py-6">
+        <ScrollReveal direction="right" delay={0.2} className="relative flex justify-center items-center py-6">
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 sm:gap-5 rotate-[-4deg] hover:rotate-0 transition-transform duration-500 ease-out">
             {/* Row 1 Empty spacer & tiles */}
             <div className="size-20 sm:size-24 rounded-2xl bg-zinc-950/40 border border-white/5 opacity-30" />
@@ -166,7 +167,7 @@ export function SeamlessIntegrationSection() {
             ))}
             <div className="size-20 sm:size-24 rounded-2xl bg-zinc-950/40 border border-white/5 opacity-30" />
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   )

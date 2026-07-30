@@ -41,3 +41,4 @@ next-env.d.ts
 .agents/
 figma/
 skills-lock.json
+secrets/

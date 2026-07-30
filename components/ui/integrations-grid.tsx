@@ -3,6 +3,7 @@
 import * as React from "react"
 import { motion } from "framer-motion"
 import { Database, MessageSquare, Code2, Globe, ArrowRight } from "lucide-react"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 interface PlatformCard {
   id: string
@@ -77,48 +78,48 @@ export function IntegrationsGridSection() {
     <section className="py-24 px-6 bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="flex flex-col items-center text-center mb-16">
-
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-normal font-cal max-w-3xl leading-[1.15]">
+        <ScrollReveal direction="up" className="flex flex-col items-center text-center mb-16">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-wide font-cal max-w-3xl leading-[1.15]">
             Available on every device & platform you could possibly think about.
           </h2>
-        </div>
+        </ScrollReveal>
 
         {/* 6 Cards Grid (2 rows x 3 columns) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {cards.map((card) => (
-            <motion.div
-              key={card.id}
-              whileHover={{ y: -4 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="rounded-2xl border border-white/10 bg-[#0c1020] p-6 sm:p-7 flex flex-col justify-between shadow-lg hover:border-blue-500/40 transition-all group"
-            >
-              <div>
-                {/* Icon Container */}
-                <div className="size-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center shadow-inner mb-5">
-                  {card.icon}
+          {cards.map((card, index) => (
+            <ScrollReveal key={card.id} direction="up" delay={0.08 * (index + 1)}>
+              <motion.div
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="rounded-2xl border border-white/10 bg-[#0c1020] p-6 sm:p-7 flex flex-col justify-between shadow-lg hover:border-blue-500/40 transition-all group h-full"
+              >
+                <div>
+                  {/* Icon Container */}
+                  <div className="size-10 rounded-xl bg-slate-900 border border-white/10 flex items-center justify-center shadow-inner mb-5">
+                    {card.icon}
+                  </div>
+
+                  {/* Title & Subtitle */}
+                  <h3 className="text-lg font-bold text-white font-cal group-hover:text-blue-400 transition-colors">
+                    {card.title}
+                  </h3>
+                  <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                    {card.subtitle}
+                  </p>
                 </div>
 
-                {/* Title & Subtitle */}
-                <h3 className="text-lg font-bold text-white font-cal group-hover:text-blue-400 transition-colors">
-                  {card.title}
-                </h3>
-                <p className="mt-2 text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
-                  {card.subtitle}
-                </p>
-              </div>
-
-              {/* Action Button */}
-              <div className="mt-6 pt-2">
-                <a
-                  href={card.href}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition-colors"
-                >
-                  <span>{card.cta}</span>
-                  <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                </a>
-              </div>
-            </motion.div>
+                {/* Action Button */}
+                <div className="mt-6 pt-2">
+                  <a
+                    href={card.href}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 px-4 py-2 text-xs font-semibold text-white transition-colors"
+                  >
+                    <span>{card.cta}</span>
+                    <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </a>
+                </div>
+              </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

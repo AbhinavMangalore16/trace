@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Plus, Layers, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/sidebar"
 import type { Cascade } from "@/db/schema"
 import { generateCascadeSlug } from "@/features/cascades/utils"
+import { cn } from "@/lib/utils"
 
 interface NavigatorProps {
   cascades: Pick<Cascade, "id" | "name">[]
@@ -25,6 +27,7 @@ interface NavigatorProps {
 
 export function Navigator({ cascades, createCascadeAction }: NavigatorProps) {
   const [isPending, startTransition] = React.useTransition()
+  const pathname = usePathname()
 
   const handleCreateCascade = () => {
     const name = generateCascadeSlug()
@@ -79,18 +82,24 @@ export function Navigator({ cascades, createCascadeAction }: NavigatorProps) {
                     </Button>
                     <Separator className="my-1 bg-sidebar-border" />
                     <div className="flex flex-col gap-0.5 max-h-64 overflow-y-auto">
-                      {cascades.map((item) => (
-                        <Button
-                          key={item.id}
-                          variant="ghost"
-                          asChild
-                          className="justify-start h-9 px-3 text-sm truncate font-normal text-sidebar-foreground hover:bg-sidebar-accent/50"
-                        >
-                          <Link href={`/cascades/${item.id}`} className="truncate">
-                            {item.name}
-                          </Link>
-                        </Button>
-                      ))}
+                      {cascades.map((item) => {
+                        const isActive = pathname === `/cascades/${item.id}`
+                        return (
+                          <Button
+                            key={item.id}
+                            variant="ghost"
+                            asChild
+                            className={cn(
+                              "justify-start h-9 px-3 text-sm truncate font-normal text-sidebar-foreground hover:bg-sidebar-accent/50",
+                              isActive && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                            )}
+                          >
+                            <Link href={`/cascades/${item.id}`} className="truncate">
+                              {item.name}
+                            </Link>
+                          </Button>
+                        )
+                      })}
                     </div>
                   </div>
                 </PopoverContent>
@@ -122,18 +131,22 @@ export function Navigator({ cascades, createCascadeAction }: NavigatorProps) {
         </div>
         <SidebarGroupContent className="mt-1">
           <SidebarMenu>
-            {cascades.map((item) => (
-              <SidebarMenuItem key={item.id}>
-                <SidebarMenuButton
-                  asChild
-                  className="h-9 rounded-md px-3 text-sm transition-all duration-200 font-normal text-sidebar-foreground hover:bg-sidebar-accent/50"
-                >
-                  <Link href={`/cascades/${item.id}`} className="truncate">
-                    {item.name}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {cascades.map((item) => {
+              const isActive = pathname === `/cascades/${item.id}`
+              return (
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    className="h-9 rounded-md px-3 text-sm transition-all duration-200 font-normal text-sidebar-foreground hover:bg-sidebar-accent/50"
+                  >
+                    <Link href={`/cascades/${item.id}`} className="truncate">
+                      {item.name}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
