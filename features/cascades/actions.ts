@@ -1,15 +1,17 @@
 "use server"
 
-import { auth } from "@clerk/nextjs/server"
+import { auth as clerkAuth } from "@clerk/nextjs/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { auth as triggerAuth, tasks } from "@trigger.dev/sdk"
 
 import { createCascade } from "@/features/cascades/data"
+import type { helloWorldTask } from "@/trigger/example"
 
 export async function createCascadeAction(input: string | { name: string }) {
   const name = typeof input === "string" ? input : input?.name
 
-  const { orgId } = await auth()
+  const { orgId } = await clerkAuth()
 
   if (!orgId) {
     throw new Error("Unauthorized: Active organization required")
@@ -23,4 +25,29 @@ export async function createCascadeAction(input: string | { name: string }) {
 
   revalidatePath("/cascades", "layout")
   redirect(`/cascades/${created.id}`)
+}
+
+export async function runCascadeAction(cascadeId: string) {
+  const { orgId } = await clerkAuth()
+
+  if (!orgId) {
+    throw new Error("Unauthorized: Active organization required")
+  }
+
+  if (!cascadeId) {
+    throw new Error("Invalid cascadeId: Cascade ID is required")
+  }
+
+  const handle = await tasks.trigger<typeof helloWorldTask>("hello-world", {
+    cascadeId,
+  })
+
+  const publicAccessToken = await triggerAuth.createPublicToken({
+    scopes: { read: { runs: [handle.id] } },
+  })
+
+  return {
+    runId: handle.id,
+    publicAccessToken,
+  }
 }

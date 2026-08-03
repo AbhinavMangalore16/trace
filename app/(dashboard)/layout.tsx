@@ -9,11 +9,18 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-4 md:hidden">
-          <SidebarTrigger />
+      <SidebarInset className="flex h-svh w-full flex-col overflow-hidden">
+        <header className="flex h-12 shrink-0 items-center justify-between border-b border-border px-3 md:hidden">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <span className="text-sm font-semibold tracking-tight text-foreground">
+              DominoFlow
+            </span>
+          </div>
         </header>
-        {children}
+        <div className="flex-1 overflow-hidden min-h-0 size-full">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

@@ -1,53 +1,132 @@
 "use client"
 
+import * as React from "react"
+import { useTheme } from "next-themes"
+import { LayoutGrid, Terminal, SlidersHorizontal } from "lucide-react"
+
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { Canvas } from "@/features/cascades/components/canvas"
+import { RightSidebar } from "@/features/cascades/components/right-sidebar"
+import { Button } from "@/components/ui/button"
 
 interface CascadeShellProps {
   cascadeId: string
 }
 
 export function CascadeShell({ cascadeId }: CascadeShellProps) {
+  const { setTheme, resolvedTheme } = useTheme()
+  const isMobile = useIsMobile()
+  const [mobileTab, setMobileTab] = React.useState<"canvas" | "logs" | "inspector">("canvas")
+
+  // Add keyboard shortcut 'd' / 'D' to toggle theme
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return
+      }
+
+      if (e.key === "d" || e.key === "D") {
+        e.preventDefault()
+        setTheme(resolvedTheme === "dark" ? "light" : "dark")
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [resolvedTheme, setTheme])
+
   return (
-    <div className="size-full bg-[#0B0813]">
-      <ResizablePanelGroup orientation="horizontal" className="size-full">
-        {/* Left Panel: Primary Column */}
-        <ResizablePanel minSize="30rem">
-          <ResizablePanelGroup orientation="vertical" className="size-full">
-            {/* Top Panel: Canvas (#14111E) */}
-            <ResizablePanel minSize="18rem">
-              <div className="flex size-full items-center justify-center bg-[#14111E] p-4 text-sm font-medium text-slate-300 select-none">
-                Canvas
-              </div>
-            </ResizablePanel>
+    <div className="size-full flex flex-col bg-background text-foreground dark:bg-[#0B0813] overflow-hidden">
+      {/* Mobile & Small Phone Workspace Layout (< 768px) */}
+      {isMobile ? (
+        <div className="flex size-full flex-col overflow-hidden">
+          {/* Mobile Tab Navigation Header */}
+          <div className="flex shrink-0 items-center justify-between border-b border-border bg-card/50 p-2 dark:border-white/10 dark:bg-[#161224]/50">
+            <div className="flex items-center gap-1 rounded-lg bg-muted p-1 dark:bg-white/5">
+              <Button
+                variant={mobileTab === "canvas" ? "secondary" : "ghost"}
+                size="xs"
+                onClick={() => setMobileTab("canvas")}
+                className="gap-1 text-xs"
+              >
+                <LayoutGrid className="size-3.5" />
+                <span>Canvas</span>
+              </Button>
+              <Button
+                variant={mobileTab === "logs" ? "secondary" : "ghost"}
+                size="xs"
+                onClick={() => setMobileTab("logs")}
+                className="gap-1 text-xs"
+              >
+                <Terminal className="size-3.5" />
+                <span>Logs</span>
+              </Button>
+              <Button
+                variant={mobileTab === "inspector" ? "secondary" : "ghost"}
+                size="xs"
+                onClick={() => setMobileTab("inspector")}
+                className="gap-1 text-xs"
+              >
+                <SlidersHorizontal className="size-3.5" />
+                <span>Inspector</span>
+              </Button>
+            </div>
+          </div>
 
-            <ResizableHandle className="bg-[#2A243D] hover:bg-[#8B5CF6]/50 transition-colors" />
-
-            {/* Bottom Panel: Logs (#09070F) */}
-            <ResizablePanel defaultSize="8rem" minSize="6rem">
-              <div className="flex size-full items-center justify-center bg-[#09070F] p-4 text-sm font-medium text-slate-400 select-none">
+          {/* Active Mobile Panel View */}
+          <div className="flex-1 overflow-hidden min-h-0 size-full">
+            {mobileTab === "canvas" && <Canvas />}
+            {mobileTab === "logs" && (
+              <div className="flex size-full items-center justify-center bg-muted/30 p-4 text-sm font-medium text-muted-foreground select-none dark:bg-[#09070F] dark:text-slate-400">
                 Logs
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </ResizablePanel>
-
-        <ResizableHandle className="bg-[#2A243D] hover:bg-[#8B5CF6]/50 transition-colors" />
-
-        {/* Right Panel: Inspector (#0B0813) */}
-        <ResizablePanel
-          defaultSize="16rem"
-          minSize="14rem"
-          maxSize="36rem"
-        >
-          <div className="flex size-full items-center justify-center bg-[#0B0813] p-4 text-sm font-medium text-slate-300 select-none">
-            Inspector
+            )}
+            {mobileTab === "inspector" && <RightSidebar cascadeId={cascadeId} />}
           </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        </div>
+      ) : (
+        /* Desktop & Laptop Resizable Split View (>= 768px) */
+        <ResizablePanelGroup orientation="horizontal" className="size-full">
+          {/* Left Panel: Primary Column */}
+          <ResizablePanel minSize="20rem" defaultSize="70%">
+            <ResizablePanelGroup orientation="vertical" className="size-full">
+              {/* Top Panel: Canvas Component */}
+              <ResizablePanel minSize="12rem" defaultSize="80%">
+                <Canvas />
+              </ResizablePanel>
+
+              <ResizableHandle className="bg-border hover:bg-primary/50 dark:bg-[#2A243D] dark:hover:bg-[#8B5CF6]/50 transition-colors" />
+
+              {/* Bottom Panel: Logs */}
+              <ResizablePanel defaultSize="20%" minSize="4rem">
+                <div className="flex size-full items-center justify-center bg-muted/30 text-muted-foreground dark:bg-[#09070F] dark:text-slate-400 p-4 text-sm font-medium select-none">
+                  Logs
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </ResizablePanel>
+
+          <ResizableHandle className="bg-border hover:bg-primary/50 dark:bg-[#2A243D] dark:hover:bg-[#8B5CF6]/50 transition-colors" />
+
+          {/* Right Panel: RightSidebar / Inspector */}
+          <ResizablePanel
+            defaultSize="30%"
+            minSize="12rem"
+            maxSize="36rem"
+          >
+            <RightSidebar cascadeId={cascadeId} />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      )}
     </div>
   )
 }
