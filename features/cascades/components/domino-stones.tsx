@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils"
 
 function DominoStoneComponent({ data, selected }: NodeProps<StepDominoType>) {
-    const { type, kind, title } = data
+    const { type, kind, title, values } = data
     const def = DominoRegistry[type]
     const Icon = def.icon
     const hasTarget = kind !== "trigger"
@@ -38,8 +38,54 @@ function DominoStoneComponent({ data, selected }: NodeProps<StepDominoType>) {
                 >
                     <Icon className="size-4" />
                 </div>
-                <span className="text-sm font-semibold">{title}</span>
+                <span className="text-sm font-semibold truncate">{title}</span>
             </div>
+
+            {def.fields && def.fields.length > 0 && (
+                <div className="border-t border-border px-3 py-2 flex flex-col gap-1.5 bg-muted/30">
+                    {def.fields.map((field) => {
+                        const val = values?.[field.key]
+                        const displayText = val || field.placeholder || "Not configured"
+                        const isShort = displayText.length <= 16
+
+                        if (isShort) {
+                            return (
+                                <div key={field.key} className="flex items-center justify-between gap-2 text-xs">
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
+                                        {field.label}
+                                        {field.required && <span className="text-destructive font-bold ml-0.5">*</span>}
+                                    </span>
+                                    <span
+                                        className={cn(
+                                            "font-mono text-xs text-right truncate max-w-[140px]",
+                                            val ? "text-foreground font-medium" : "text-muted-foreground/60 italic"
+                                        )}
+                                    >
+                                        {displayText}
+                                    </span>
+                                </div>
+                            )
+                        }
+
+                        return (
+                            <div key={field.key} className="flex flex-col gap-0.5 text-xs">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                    {field.label}
+                                    {field.required && <span className="text-destructive font-bold ml-0.5">*</span>}
+                                </span>
+                                <span
+                                    className={cn(
+                                        "font-mono text-xs truncate",
+                                        val ? "text-foreground font-medium" : "text-muted-foreground/60 italic"
+                                    )}
+                                >
+                                    {displayText}
+                                </span>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
 
             <Handle
                 type="source"

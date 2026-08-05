@@ -17,6 +17,8 @@ import {
   Moon,
   Wrench,
   SlidersHorizontal,
+  Square,
+  X,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -39,7 +41,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
-import { runCascadeAction, deleteCascadeAction } from "@/features/cascades/actions"
+import { runCascadeAction, deleteCascadeAction, cancelCascadeRunAction } from "@/features/cascades/actions"
+import { graphDFSToposort } from "@/features/cascades/utils/graph-dfs-toposort"
+import type { runCascadeDomino } from "@/features/cascades/tasks/run-cascade"
 import {
   DominoRegistry,
   type DominoDefinition,
@@ -48,7 +52,7 @@ import {
   type StepDominoKind,
   type StepDominoType,
 } from "@/features/cascades/dominos/domino-registry"
-import type { helloWorldTask } from "@/trigger/example"
+
 
 // ---------------------------------------------------------------------------
 // Shared pieces — used by both the Toolkit and the Editor.
@@ -113,7 +117,7 @@ function Field({
         value={value}
         placeholder={field.placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="text-xs"
+        className="text-xs min-h-[80px] font-mono resize-y"
       />
     )
   }
@@ -155,7 +159,7 @@ function Inspector({ node }: { node: StepDominoType | undefined }) {
     <Section title={title || def.label} icon={<NodeIcon type={type} />}>
       <div className="flex flex-col gap-3 p-3">
         {def.fields.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No configurable properties for this step.</p>
+          <p className="text-xs text-muted-foreground">No configurable properties for this domino.</p>
         ) : (
           def.fields.map((field) => (
             <div key={field.key} className="flex flex-col gap-1.5">
@@ -310,9 +314,10 @@ function RunButton({
   onRunTriggered,
 }: {
   cascadeId?: string
-  onRunTriggered: (run: { runId: string; publicAccessToken: string }) => void
+  onRunTriggered: (run: { runId: string; publicAccessToken: string } | null) => void
 }) {
   const [isPending, startTransition] = React.useTransition()
+  const { getNodes, getEdges } = useReactFlow<StepDominoType>()
 
   const handleRunCascade = () => {
     if (!cascadeId) {
@@ -320,9 +325,19 @@ function RunButton({
       return
     }
 
+    const nodes = getNodes()
+    const edges = getEdges()
+
+    const problems = graphDFSToposort({ nodes, edges })
+    if (problems.length > 0) {
+      toast.error(problems[0])
+      onRunTriggered(null)
+      return
+    }
+
     startTransition(async () => {
       try {
-        const res = await runCascadeAction(cascadeId)
+        const res = await runCascadeAction(cascadeId, { nodes, edges })
         onRunTriggered({
           runId: res.runId,
           publicAccessToken: res.publicAccessToken,
@@ -370,7 +385,7 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
     publicAccessToken: string
   } | null>(null)
 
-  const { run, error: realtimeError } = useRealtimeRun<typeof helloWorldTask>(
+  const { run, error: realtimeError } = useRealtimeRun<typeof runCascadeDomino>(
     activeRun?.runId ?? "",
     {
       accessToken: activeRun?.publicAccessToken ?? "",
@@ -491,22 +506,33 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Run Status
             </span>
-            {statusConfig ? (
-              <div
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
-                  statusConfig.badgeClass
-                )}
+            <div className="flex items-center gap-1.5">
+              {statusConfig ? (
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                    statusConfig.badgeClass
+                  )}
+                >
+                  {statusConfig.icon}
+                  <span>{statusConfig.label}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin text-purple-500" />
+                  <span>Connecting...</span>
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setActiveRun(null)}
+                className="size-5 rounded-full text-muted-foreground hover:text-foreground"
+                title="Dismiss status"
               >
-                {statusConfig.icon}
-                <span>{statusConfig.label}</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <Loader2 className="size-3 animate-spin text-purple-500" />
-                <span>Connecting...</span>
-              </div>
-            )}
+                <X className="size-3" />
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1 text-[11px] text-muted-foreground">

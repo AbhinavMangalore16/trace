@@ -1,6 +1,7 @@
 import { db } from "@/db"
-import { cascades, type Cascade } from "@/db/schema"
+import { cascades, type Cascade, type CascadeGraph } from "@/db/schema"
 import { and, desc, eq } from "drizzle-orm"
+import { graphDFSToposort } from "./utils/graph-dfs-toposort"
 
 export function listCascades(orgId: string) {
   return db
@@ -86,4 +87,17 @@ export async function deleteCascade({
     .returning()
 
   return deleted ?? null
+}
+
+export async function persistCascadeGraph({
+  id, orgId, graph
+}: {
+  id: string, orgId: string, graph: CascadeGraph
+}) {
+  const issues = graphDFSToposort(graph);
+  if (issues.length > 0)
+    throw new Error("Solve these errors: " + issues.join(", "))
+  await db.update(cascades)
+    .set({ graph, updatedAt: new Date() })
+    .where(and(eq(cascades.id, id), eq(cascades.orgId, orgId)))
 }
