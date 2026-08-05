@@ -22,6 +22,8 @@ export async function AppSidebar() {
           <OrganizationSwitcher
             afterCreateOrganizationUrl="/choose-organization"
             afterSelectOrganizationUrl="/"
+            afterLeaveOrganizationUrl="/"
+            hidePersonal
             appearance={{
               elements: {
                 rootBox: "flex items-center",

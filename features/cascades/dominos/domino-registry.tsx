@@ -1,5 +1,5 @@
 import type { Node } from "@xyflow/react"
-import { Globe, MousePointerClick, type LucideIcon } from "lucide-react"
+import { Globe, Play, type LucideIcon } from "lucide-react"
 
 export type StepDominoKind = "trigger" | "action"
 
@@ -7,6 +7,8 @@ export type DominoField = {
     key: string
     label: string
     placeholder?: string
+    multiline?: boolean
+    required?: boolean
 }
 
 
@@ -24,7 +26,7 @@ export const DominoRegistry = {
         type: "start",
         kind: "trigger",
         label: "Start",
-        icon: MousePointerClick,
+        icon: Play,
         accent: "bg-purple-500 text-white",
         fields: [],
     },

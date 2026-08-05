@@ -10,13 +10,20 @@ export function listCascades(orgId: string) {
     .orderBy(desc(cascades.createdAt))
 }
 
-export async function getCascadeById({
-  id,
-  orgId,
-}: {
-  id: string
+export async function getCascade(
+  opts: { id: string; orgId: string }
+): Promise<Cascade | null>
+export async function getCascade(
+  id: string,
   orgId: string
-}) {
+): Promise<Cascade | null>
+export async function getCascade(
+  idOrOpts: string | { id: string; orgId: string },
+  orgIdParam?: string
+): Promise<Cascade | null> {
+  const id = typeof idOrOpts === "string" ? idOrOpts : idOrOpts.id
+  const orgId = typeof idOrOpts === "string" ? orgIdParam! : idOrOpts.orgId
+
   const [cascade] = await db
     .select()
     .from(cascades)
@@ -25,7 +32,7 @@ export async function getCascadeById({
   return cascade ?? null
 }
 
-export const getCascade = getCascadeById
+export const getCascadeById = getCascade
 
 export async function createCascade({
   orgId,

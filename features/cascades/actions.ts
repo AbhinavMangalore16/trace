@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth as triggerAuth, tasks } from "@trigger.dev/sdk"
 
-import { createCascade } from "@/features/cascades/data"
+import { createCascade, deleteCascade } from "@/features/cascades/data"
 import type { helloWorldTask } from "@/trigger/example"
 
 export async function createCascadeAction(input: string | { name: string }) {
@@ -25,6 +25,23 @@ export async function createCascadeAction(input: string | { name: string }) {
 
   revalidatePath("/cascades", "layout")
   redirect(`/cascades/${created.id}`)
+}
+
+export async function deleteCascadeAction(cascadeId: string) {
+  const { orgId } = await clerkAuth()
+
+  if (!orgId) {
+    throw new Error("Unauthorized: Active organization required")
+  }
+
+  if (!cascadeId) {
+    throw new Error("Invalid cascadeId: Cascade ID is required")
+  }
+
+  await deleteCascade({ id: cascadeId, orgId })
+
+  revalidatePath("/cascades", "layout")
+  redirect("/cascades")
 }
 
 export async function runCascadeAction(cascadeId: string) {

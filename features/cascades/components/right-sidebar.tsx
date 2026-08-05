@@ -2,14 +2,360 @@
 
 import * as React from "react"
 import { useTheme } from "next-themes"
+import { useReactFlow, useStore } from "@xyflow/react"
 import { useRealtimeRun } from "@trigger.dev/react-hooks"
-import { Play, Loader2, CheckCircle2, XCircle, Clock, Sparkles, Sun, Moon } from "lucide-react"
+import {
+  MoreHorizontal,
+  Play,
+  Trash2,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Sparkles,
+  Sun,
+  Moon,
+  Wrench,
+  SlidersHorizontal,
+} from "lucide-react"
 import { toast } from "sonner"
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { runCascadeAction } from "@/features/cascades/actions"
-import type { helloWorldTask } from "@/trigger/example"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+
+import { runCascadeAction, deleteCascadeAction } from "@/features/cascades/actions"
+import {
+  DominoRegistry,
+  type DominoDefinition,
+  type DominoField,
+  type DominoType,
+  type StepDominoKind,
+  type StepDominoType,
+} from "@/features/cascades/dominos/domino-registry"
+import type { helloWorldTask } from "@/trigger/example"
+
+// ---------------------------------------------------------------------------
+// Shared pieces — used by both the Toolkit and the Editor.
+// ---------------------------------------------------------------------------
+
+// The accent-colored icon chip, mirroring the node on the canvas.
+function NodeIcon({ type, className }: { type: DominoType; className?: string }) {
+  const def = DominoRegistry[type]
+  if (!def) return null
+  const Icon = def.icon
+  return (
+    <span
+      className={cn(
+        "flex size-6 shrink-0 items-center justify-center rounded-md",
+        def.accent,
+        className
+      )}
+    >
+      <Icon className="size-3.5" />
+    </span>
+  )
+}
+
+// A titled, scrollable panel. Each tab renders its content inside one.
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string
+  icon?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center gap-2 border-y border-border bg-card px-3 py-2 text-xs font-semibold">
+        {icon}
+        {title}
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Editor tab — edits the fields of the selected node.
+// ---------------------------------------------------------------------------
+
+function Field({
+  field,
+  value,
+  onChange,
+}: {
+  field: DominoField
+  value: string
+  onChange: (value: string) => void
+}) {
+  if (field.multiline) {
+    return (
+      <Textarea
+        id={field.key}
+        value={value}
+        placeholder={field.placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="text-xs"
+      />
+    )
+  }
+
+  return (
+    <Input
+      id={field.key}
+      value={value}
+      placeholder={field.placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      className="text-xs h-8"
+    />
+  )
+}
+
+function Inspector({ node }: { node: StepDominoType | undefined }) {
+  const { updateNodeData } = useReactFlow<StepDominoType>()
+
+  if (!node) {
+    return (
+      <Section title="Editor" icon={<SlidersHorizontal className="size-3.5" />}>
+        <p className="p-3 text-xs text-muted-foreground">No node selected</p>
+      </Section>
+    )
+  }
+
+  const { type, title, values } = node.data
+  const def: DominoDefinition | undefined = DominoRegistry[type]
+
+  if (!def) {
+    return (
+      <Section title="Editor" icon={<SlidersHorizontal className="size-3.5" />}>
+        <p className="p-3 text-xs text-muted-foreground">Unknown node type</p>
+      </Section>
+    )
+  }
+
+  return (
+    <Section title={title || def.label} icon={<NodeIcon type={type} />}>
+      <div className="flex flex-col gap-3 p-3">
+        {def.fields.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No configurable properties for this step.</p>
+        ) : (
+          def.fields.map((field) => (
+            <div key={field.key} className="flex flex-col gap-1.5">
+              <Label htmlFor={field.key} className="text-xs">
+                {field.label}
+                {field.required && <span className="text-destructive">*</span>}
+              </Label>
+              <Field
+                field={field}
+                value={values[field.key] ?? ""}
+                onChange={(value) => {
+                  updateNodeData(node.id, {
+                    values: { ...values, [field.key]: value },
+                  })
+                }}
+              />
+            </div>
+          ))
+        )}
+      </div>
+    </Section>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Toolkit tab — adds nodes to the canvas, grouped by kind.
+// ---------------------------------------------------------------------------
+
+const sections: { kind: StepDominoKind; label: string }[] = [
+  { kind: "trigger", label: "Triggers" },
+  { kind: "action", label: "Actions" },
+]
+
+const definitions = Object.values(DominoRegistry)
+
+function Palette() {
+  const { getNodes, getViewport, addNodes } = useReactFlow<StepDominoType>()
+  const width = useStore((s) => s.width)
+  const height = useStore((s) => s.height)
+
+  const add = (type: DominoType) => {
+    const def = DominoRegistry[type]
+    if (!def) return
+
+    const nodes = getNodes()
+
+    if (def.kind === "trigger" && nodes.some((n) => n.data?.kind === "trigger")) {
+      toast.error("A cascade can only have one trigger.")
+      return
+    }
+
+    const count = nodes.filter((n) => n.data?.type === type).length
+    const title = `${def.label} ${count + 1}`
+
+    const { x, y, zoom } = getViewport()
+    const position = {
+      x: ((width || 800) / 2 - x) / (zoom || 1),
+      y: ((height || 600) / 2 - y) / (zoom || 1),
+    }
+
+    addNodes({
+      id: crypto.randomUUID(),
+      type: "step",
+      position,
+      data: { type, kind: def.kind, title, values: {} },
+    })
+
+    toast.success(`Added ${title} domino`)
+  }
+
+  return (
+    <Section title="Toolkit" icon={<Wrench className="size-3.5" />}>
+      <Accordion
+        type="multiple"
+        defaultValue={sections.map((s) => s.kind)}
+        className="px-3 py-2"
+      >
+        {sections.map((section) => (
+          <AccordionItem
+            key={section.kind}
+            value={section.kind}
+            className="not-last:border-b-0"
+          >
+            <AccordionTrigger className="py-2 text-xs font-medium text-muted-foreground hover:no-underline">
+              {section.label}
+            </AccordionTrigger>
+            <AccordionContent className="flex flex-col gap-1">
+              {definitions
+                .filter((def) => def.kind === section.kind)
+                .map((def) => (
+                  <Button
+                    key={def.type}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => add(def.type as DominoType)}
+                    className="justify-start gap-2.5 px-2 text-xs h-8 hover:bg-accent/60"
+                  >
+                    <NodeIcon type={def.type as DominoType} />
+                    <span>{def.label}</span>
+                  </Button>
+                ))}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </Section>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Header Actions
+// ---------------------------------------------------------------------------
+
+function ActionsMenu({ cascadeId }: { cascadeId?: string }) {
+  const [isPending, startTransition] = React.useTransition()
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="icon" variant="ghost" className="size-7">
+          <MoreHorizontal className="size-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-44">
+        <DropdownMenuItem
+          variant="destructive"
+          disabled={isPending || !cascadeId}
+          className="text-xs gap-2"
+          onSelect={(e) => {
+            if (!cascadeId) return
+            e.preventDefault()
+            startTransition(async () => {
+              try {
+                await deleteCascadeAction(cascadeId)
+                toast.success("Cascade deleted")
+              } catch (err: any) {
+                toast.error(err?.message || "Failed to delete cascade")
+              }
+            })
+          }}
+        >
+          {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+          <span>Delete cascade</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function RunButton({
+  cascadeId,
+  onRunTriggered,
+}: {
+  cascadeId?: string
+  onRunTriggered: (run: { runId: string; publicAccessToken: string }) => void
+}) {
+  const [isPending, startTransition] = React.useTransition()
+
+  const handleRunCascade = () => {
+    if (!cascadeId) {
+      toast.error("No active cascade ID found")
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await runCascadeAction(cascadeId)
+        onRunTriggered({
+          runId: res.runId,
+          publicAccessToken: res.publicAccessToken,
+        })
+        toast.success("Cascade run triggered!", {
+          description: `Run ID: ${res.runId}`,
+        })
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to trigger cascade run")
+      }
+    })
+  }
+
+  return (
+    <Button
+      size="xs"
+      disabled={isPending || !cascadeId}
+      onClick={handleRunCascade}
+      className="gap-1.5 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+    >
+      {isPending ? (
+        <Loader2 className="size-3.5 animate-spin" />
+      ) : (
+        <Play className="size-3.5 fill-current" />
+      )}
+      <span>{isPending ? "Starting..." : "Run"}</span>
+    </Button>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Main RightSidebar Component
+// ---------------------------------------------------------------------------
 
 interface RightSidebarProps {
   cascadeId?: string
@@ -17,7 +363,8 @@ interface RightSidebarProps {
 
 export function RightSidebar({ cascadeId }: RightSidebarProps) {
   const { setTheme, resolvedTheme } = useTheme()
-  const [isPending, startTransition] = React.useTransition()
+  const [tab, setTab] = React.useState("toolkit")
+
   const [activeRun, setActiveRun] = React.useState<{
     runId: string
     publicAccessToken: string
@@ -31,29 +378,18 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
     }
   )
 
-  const handleRunCascade = () => {
-    if (!cascadeId) {
-      toast.error("No active cascade ID found")
-      return
-    }
+  // Selected node tracking
+  const selected = useStore((s) =>
+    s.nodes.find((n) => n.selected)
+  ) as StepDominoType | undefined
 
-    startTransition(async () => {
-      try {
-        const res = await runCascadeAction(cascadeId)
-        setActiveRun({
-          runId: res.runId,
-          publicAccessToken: res.publicAccessToken,
-        })
-        toast.success("Cascade run triggered!", {
-          description: `Run ID: ${res.runId}`,
-        })
-      } catch (err: any) {
-        toast.error(err?.message || "Failed to trigger cascade run")
-      }
-    })
+  const [prevSelectedId, setPrevSelectedId] = React.useState(selected?.id)
+  if (selected && selected.id !== prevSelectedId) {
+    setPrevSelectedId(selected.id)
+    setTab("editor")
   }
 
-  // Color configurations based on realtime task run status
+  // Realtime Status badge configuration
   const getStatusBadgeConfig = (status?: string) => {
     if (!status) return null
 
@@ -100,56 +436,65 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
   const statusConfig = getStatusBadgeConfig(run?.status)
 
   return (
-    <div className="flex size-full flex-col justify-between overflow-y-auto bg-background text-foreground dark:bg-[#0B0813] p-3 sm:p-4 select-none gap-4">
-      {/* Top Header / Trigger & Theme Toggle Actions */}
-      <div className="flex w-full flex-col items-center gap-3">
-        {/* Run Cascade Primary Button */}
-        <Button
-          disabled={isPending}
-          onClick={handleRunCascade}
-          className="w-full gap-2 bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
-        >
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Play className="size-4 fill-current" />
-          )}
-          <span>{isPending ? "Starting..." : "Run Cascade"}</span>
-        </Button>
-
-        {/* Theme Toggle Button with 'Press D to toggle' prompt */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          className="w-full justify-between gap-2 border-border/60 bg-muted/30 hover:bg-accent text-xs transition-all"
-          title="Toggle light/dark theme (or press 'D' on keyboard)"
-        >
-          <div className="flex items-center gap-2">
+    <div className="flex size-full flex-col bg-background text-foreground dark:bg-[#0B0813] select-none overflow-hidden">
+      {/* Header Actions */}
+      <div className="flex items-center justify-between border-b border-border p-2">
+        <div className="flex items-center gap-1">
+          <ActionsMenu cascadeId={cascadeId} />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+            className="size-7"
+            title="Toggle theme (press 'D')"
+          >
             {resolvedTheme === "dark" ? (
               <Sun className="size-3.5 text-amber-400" />
             ) : (
               <Moon className="size-3.5 text-purple-600" />
             )}
-            <span>{resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-          </div>
-          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground shadow-xs">
-            D
-          </kbd>
-        </Button>
+          </Button>
+        </div>
+        <RunButton cascadeId={cascadeId} onRunTriggered={setActiveRun} />
       </div>
+
+      {/* Tabs Layout */}
+      <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col gap-0">
+        <TabsList className="m-2 w-fit bg-muted/50 p-1">
+          <TabsTrigger
+            value="toolkit"
+            className="flex-none rounded-sm px-3 py-1 text-xs font-medium data-active:bg-background data-active:text-foreground data-active:shadow-xs"
+          >
+            Toolkit
+          </TabsTrigger>
+          <TabsTrigger
+            value="editor"
+            className="flex-none rounded-sm px-3 py-1 text-xs font-medium data-active:bg-background data-active:text-foreground data-active:shadow-xs"
+          >
+            Editor
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="toolkit" className="flex min-h-0 flex-1 flex-col border-none p-0 mt-0">
+          <Palette />
+        </TabsContent>
+
+        <TabsContent value="editor" className="flex min-h-0 flex-1 flex-col border-none p-0 mt-0">
+          <Inspector node={selected} />
+        </TabsContent>
+      </Tabs>
 
       {/* Realtime Task Feedback Container */}
       {activeRun && (
-        <div className="flex w-full flex-col gap-3 rounded-xl border border-border bg-card dark:border-white/10 dark:bg-white/[0.03] p-3 backdrop-blur-md transition-all">
+        <div className="border-t border-border p-3 flex flex-col gap-2.5 bg-card/50 dark:bg-white/[0.02]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground dark:text-slate-400">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Run Status
             </span>
             {statusConfig ? (
               <div
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-all",
+                  "flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
                   statusConfig.badgeClass
                 )}
               >
@@ -157,24 +502,24 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
                 <span>{statusConfig.label}</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Loader2 className="size-3 animate-spin text-purple-500" />
                 <span>Connecting...</span>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground dark:text-slate-400">
+          <div className="flex flex-col gap-1 text-[11px] text-muted-foreground">
             <div className="flex justify-between">
-              <span className="text-muted-foreground/70 dark:text-slate-500">Run ID:</span>
-              <span className="font-mono text-foreground dark:text-slate-300 truncate max-w-[130px]" title={activeRun.runId}>
+              <span>Run ID:</span>
+              <span className="font-mono text-foreground truncate max-w-[120px]" title={activeRun.runId}>
                 {activeRun.runId}
               </span>
             </div>
             {run?.durationMs && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground/70 dark:text-slate-500">Duration:</span>
-                <span className="font-mono text-foreground dark:text-slate-300">
+                <span>Duration:</span>
+                <span className="font-mono text-foreground">
                   {(run.durationMs / 1000).toFixed(2)}s
                 </span>
               </div>
@@ -183,9 +528,9 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
 
           {/* Realtime Output Feedback (Green Container) */}
           {run?.output && (
-            <div className="mt-1 flex flex-col gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-500/5 p-2 text-xs">
+            <div className="flex flex-col gap-1 rounded-lg border border-emerald-500/20 bg-emerald-500/10 dark:bg-emerald-500/5 p-2 text-xs">
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">Output</span>
-              <pre className="whitespace-pre-wrap font-mono text-[11px] text-emerald-800 dark:text-emerald-200 overflow-x-auto">
+              <pre className="whitespace-pre-wrap font-mono text-[11px] text-emerald-800 dark:text-emerald-200 overflow-x-auto max-h-32">
                 {JSON.stringify(run.output, null, 2)}
               </pre>
             </div>
@@ -193,7 +538,7 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
 
           {/* Realtime Error Feedback (Red Container) */}
           {(realtimeError || run?.error) && (
-            <div className="mt-1 flex flex-col gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5 p-2 text-xs">
+            <div className="flex flex-col gap-1 rounded-lg border border-rose-500/20 bg-rose-500/10 dark:bg-rose-500/5 p-2 text-xs">
               <span className="font-semibold text-rose-600 dark:text-rose-400">Error</span>
               <p className="font-mono text-[11px] text-rose-800 dark:text-rose-300">
                 {realtimeError?.message || JSON.stringify(run?.error)}
