@@ -25,7 +25,7 @@ export type DominoDefinition = {
     fields: DominoField[]
 }
 
-export const DominoRegistry = {
+export const DominoRegistry: Record<string, DominoDefinition> = {
     // --- TRIGGERS ---
     "start": {
         type: "start",
