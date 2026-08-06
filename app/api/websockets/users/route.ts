@@ -14,18 +14,23 @@ export async function POST(request: Request) {
   }
 
   const client = await clerkClient()
-  const { data: users } = await client.users.getUserList({
+  const { data: memberships } = await client.organizations.getOrganizationMembershipList({
+    organizationId: orgId,
     userId: userIds,
   })
 
   const userMap = new Map(
-    users.map((u) => [
-      u.id,
-      {
-        name: u.fullName ?? u.firstName ?? "Anonymous",
-        avatar: u.imageUrl,
-      },
-    ])
+    memberships.map((m) => {
+      const u = m.publicUserData
+      const fullName = [u?.firstName, u?.lastName].filter(Boolean).join(" ")
+      return [
+        u?.userId ?? "",
+        {
+          name: fullName || u?.identifier || "Anonymous",
+          avatar: u?.imageUrl ?? "",
+        },
+      ]
+    })
   )
 
   const resolvedUsers = userIds.map((id) => userMap.get(id) ?? null)

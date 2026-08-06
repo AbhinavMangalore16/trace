@@ -6,7 +6,7 @@ import { redirect } from "next/navigation"
 import { auth as triggerAuth, tasks, runs } from "@trigger.dev/sdk"
 
 import type { CascadeGraph } from "@/db/schema"
-import { createCascade, deleteCascade, persistCascadeGraph } from "@/features/cascades/data"
+import { createCascade, deleteCascade, getCascade, persistCascadeGraph } from "@/features/cascades/data"
 import { liveblocks } from "@/lib/liveblocks"
 import { runCascadeDomino } from "./tasks/run-cascade"
 
@@ -65,24 +65,27 @@ export async function runCascadeAction(cascadeId: string, inputGraph?: CascadeGr
 
   let graph = inputGraph
 
-  if (!graph || !graph.nodes || graph.nodes.length === 0) {
+  if (inputGraph === undefined) {
     try {
       const storage = await liveblocks.getStorageDocument(cascadeId)
-      const nodes = (storage.data?.nodes ?? []) as any
-      const edges = (storage.data?.edges ?? []) as any
-      graph = { nodes, edges }
+      const data = storage.data as { nodes?: unknown[]; edges?: unknown[] } | undefined
+      const nodes = Array.isArray(data?.nodes) ? data.nodes : []
+      const edges = Array.isArray(data?.edges) ? data.edges : []
+      graph = { nodes: nodes as any, edges: edges as any }
     } catch (err) {
       console.error("Failed to fetch Liveblocks storage document:", err)
     }
   }
 
-  if (graph && graph.nodes && graph.nodes.length > 0) {
-    await persistCascadeGraph({
-      id: cascadeId,
-      orgId,
-      graph,
-    })
+  if (!graph || !Array.isArray(graph.nodes) || graph.nodes.length === 0) {
+    throw new Error("Cannot run cascade: Graph is empty or contains no nodes")
   }
+
+  await persistCascadeGraph({
+    id: cascadeId,
+    orgId,
+    graph,
+  })
 
   const handle = await tasks.trigger<typeof runCascadeDomino>(
     "run-cascade-domino",
@@ -109,6 +112,21 @@ export async function cancelCascadeRunAction(runId: string) {
 
   if (!runId) {
     throw new Error("Invalid runId: Run ID is required")
+  }
+
+  const run = await runs.retrieve(runId)
+  const payloadOrgId = (run?.payload as { orgId?: string } | undefined)?.orgId
+  const cascadeId = (run?.payload as { cascadeId?: string } | undefined)?.cascadeId
+
+  if (payloadOrgId && payloadOrgId !== orgId) {
+    throw new Error("Unauthorized: Run does not belong to the active organization")
+  }
+
+  if (cascadeId) {
+    const cascade = await getCascade({ id: cascadeId, orgId })
+    if (!cascade) {
+      throw new Error("Unauthorized: Cascade does not belong to the active organization")
+    }
   }
 
   await runs.cancel(runId)

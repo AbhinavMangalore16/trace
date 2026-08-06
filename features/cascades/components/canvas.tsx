@@ -24,10 +24,9 @@ import "@liveblocks/react-flow/styles.css"
 
 const emptySubscribe = () => () => { }
 
-// Register 'step' and 'domino' node types to match StepDominoType (where type is 'step')
+// Register 'step' node type to match StepDominoType (where type is 'step')
 const dominoTypes: NodeTypes = {
   step: DominoStone,
-  domino: DominoStone,
 }
 
 function useHasMounted() {
@@ -84,12 +83,20 @@ export function Canvas() {
 
   const isDark = colorMode === "dark"
 
+  if (nodes === null || edges === null) {
+    return (
+      <div className="relative flex size-full items-center justify-center bg-background dark:bg-[#14111E]">
+        <div className="text-sm text-muted-foreground animate-pulse">Loading canvas...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="relative size-full bg-background dark:bg-[#14111E]">
       <ReactFlow
         nodeTypes={dominoTypes}
-        nodes={nodes ?? undefined}
-        edges={edges ?? undefined}
+        nodes={nodes}
+        edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}

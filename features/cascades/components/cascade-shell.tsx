@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { useTheme } from "next-themes"
 import { LayoutGrid, Terminal, SlidersHorizontal } from "lucide-react"
-
+import { cn } from "@/lib/utils"
 import { ReactFlowProvider } from "@xyflow/react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -20,30 +19,8 @@ interface CascadeShellProps {
 }
 
 export function CascadeShell({ cascadeId }: CascadeShellProps) {
-  const { setTheme, resolvedTheme } = useTheme()
   const isMobile = useIsMobile()
   const [mobileTab, setMobileTab] = React.useState<"canvas" | "logs" | "inspector">("canvas")
-
-  // Add keyboard shortcut 'd' / 'D' to toggle theme
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        (e.target as HTMLElement)?.isContentEditable
-      ) {
-        return
-      }
-
-      if (e.key === "d" || e.key === "D") {
-        e.preventDefault()
-        setTheme(resolvedTheme === "dark" ? "light" : "dark")
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [resolvedTheme, setTheme])
 
   return (
     <ReactFlowProvider>
@@ -85,14 +62,18 @@ export function CascadeShell({ cascadeId }: CascadeShellProps) {
             </div>
 
             {/* Active Mobile Panel View */}
-            <div className="flex-1 overflow-hidden min-h-0 size-full">
-              {mobileTab === "canvas" && <Canvas />}
+            <div className="relative flex-1 overflow-hidden min-h-0 size-full">
+              <div className={cn("size-full", mobileTab === "canvas" ? "block" : "hidden")}>
+                <Canvas />
+              </div>
               {mobileTab === "logs" && (
                 <div className="flex size-full items-center justify-center bg-muted/30 p-4 text-sm font-medium text-muted-foreground select-none dark:bg-[#09070F] dark:text-slate-400">
                   Logs
                 </div>
               )}
-              {mobileTab === "inspector" && <RightSidebar cascadeId={cascadeId} />}
+              <div className={cn("size-full", mobileTab === "inspector" ? "block" : "hidden")}>
+                <RightSidebar cascadeId={cascadeId} />
+              </div>
             </div>
           </div>
         ) : (

@@ -10,7 +10,9 @@ import { cn } from "@/lib/utils"
 function DominoStoneComponent({ data, selected }: NodeProps<StepDominoType>) {
     const { type, kind, title, values } = data
     const def = DominoRegistry[type]
-    const Icon = def.icon
+    const Icon = def?.icon
+    const accent = def?.accent ?? "bg-muted text-muted-foreground"
+    const fields = def?.fields ?? []
     const hasTarget = kind !== "trigger"
 
     return (
@@ -33,15 +35,15 @@ function DominoStoneComponent({ data, selected }: NodeProps<StepDominoType>) {
                 <div
                     className={cn(
                         "flex size-7 shrink-0 items-center justify-center rounded-md",
-                        def.accent
+                        accent
                     )}
                 >
-                    <Icon className="size-4" />
+                    {Icon && <Icon className="size-4" />}
                 </div>
-                <span className="text-sm font-semibold truncate">{title}</span>
+                <span className="text-sm font-semibold truncate">{title || def?.label || type}</span>
             </div>
 
-            {def.fields && def.fields.length > 0 && (
+            {fields.length > 0 && (
                 <div className="border-t border-border px-3 py-2 flex flex-col gap-1.5 bg-muted/30">
                     {def.fields.map((field) => {
                         const val = values?.[field.key]

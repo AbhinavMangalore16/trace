@@ -97,7 +97,14 @@ export async function persistCascadeGraph({
   const issues = graphDFSToposort(graph);
   if (issues.length > 0)
     throw new Error("Solve these errors: " + issues.join(", "))
-  await db.update(cascades)
+  const [updated] = await db.update(cascades)
     .set({ graph, updatedAt: new Date() })
     .where(and(eq(cascades.id, id), eq(cascades.orgId, orgId)))
+    .returning()
+
+  if (!updated) {
+    throw new Error("Cascade not found or unauthorized")
+  }
+
+  return updated
 }

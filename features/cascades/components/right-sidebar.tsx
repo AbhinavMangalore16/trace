@@ -295,8 +295,9 @@ function ActionsMenu({ cascadeId }: { cascadeId?: string }) {
               try {
                 await deleteCascadeAction(cascadeId)
                 toast.success("Cascade deleted")
-              } catch (err: any) {
-                toast.error(err?.message || "Failed to delete cascade")
+              } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : "Failed to delete cascade"
+                toast.error(message)
               }
             })
           }}
@@ -345,8 +346,9 @@ function RunButton({
         toast.success("Cascade run triggered!", {
           description: `Run ID: ${res.runId}`,
         })
-      } catch (err: any) {
-        toast.error(err?.message || "Failed to trigger cascade run")
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to trigger cascade run"
+        toast.error(message)
       }
     })
   }
@@ -523,15 +525,37 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
                   <span>Connecting...</span>
                 </div>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setActiveRun(null)}
-                className="size-5 rounded-full text-muted-foreground hover:text-foreground"
-                title="Dismiss status"
-              >
-                <X className="size-3" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {run && (run.status === "EXECUTING" || run.status === "QUEUED") && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={async () => {
+                      try {
+                        await cancelCascadeRunAction(activeRun.runId)
+                        toast.success("Cascade run cancellation requested")
+                      } catch (err: unknown) {
+                        const message = err instanceof Error ? err.message : "Failed to cancel run"
+                        toast.error(message)
+                      }
+                    }}
+                    className="h-5 gap-1 px-1.5 text-[10px] text-muted-foreground hover:text-destructive"
+                    title="Cancel run"
+                  >
+                    <Square className="size-2.5 fill-current" />
+                    <span>Cancel</span>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveRun(null)}
+                  className="size-5 rounded-full text-muted-foreground hover:text-foreground"
+                  title="Dismiss status"
+                >
+                  <X className="size-3" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -542,7 +566,7 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
                 {activeRun.runId}
               </span>
             </div>
-            {run?.durationMs && (
+            {run?.durationMs !== undefined && (
               <div className="flex justify-between">
                 <span>Duration:</span>
                 <span className="font-mono text-foreground">
