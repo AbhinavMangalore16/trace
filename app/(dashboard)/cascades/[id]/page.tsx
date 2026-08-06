@@ -1,8 +1,11 @@
+import { auth as clerkAuth } from "@clerk/nextjs/server"
+import { auth as triggerAuth } from "@trigger.dev/sdk"
+import { notFound } from "next/navigation"
+
 import { CascadeShell } from "@/features/cascades/components/cascade-shell"
+import { CascadeRunsProvider } from "@/features/cascades/components/cascade-runs-provider"
 import { Room } from "@/features/cascades/components/room"
 import { getCascade } from "@/features/cascades/data"
-import { auth } from "@clerk/nextjs/server"
-import { notFound } from "next/navigation"
 import { liveblocks } from "@/lib/liveblocks"
 
 interface CascadePageProps {
@@ -13,7 +16,7 @@ interface CascadePageProps {
 
 export default async function CascadePage({ params }: CascadePageProps) {
   const { id } = await params
-  const { orgId } = await auth()
+  const { orgId } = await clerkAuth()
 
   if (!orgId) notFound()
 
@@ -32,9 +35,21 @@ export default async function CascadePage({ params }: CascadePageProps) {
     }
   })
 
+  const publicAccessToken = await triggerAuth.createPublicToken({
+    scopes: {
+      read: {
+        tags: [`cascade:${id}`],
+      },
+    },
+    expirationTime: "1h",
+  })
+
   return (
     <Room roomId={id}>
-      <CascadeShell cascadeId={id} />
+      <CascadeRunsProvider cascadeId={id} publicAccessToken={publicAccessToken}>
+        <CascadeShell cascadeId={id} />
+      </CascadeRunsProvider>
     </Room>
   )
 }
+

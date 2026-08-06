@@ -90,7 +90,7 @@ export async function runCascadeAction(cascadeId: string, inputGraph?: CascadeGr
   const handle = await tasks.trigger<typeof runCascadeDomino>(
     "run-cascade-domino",
     { cascadeId, orgId },
-    { tags: [`workflow:${cascadeId}`] }
+    { tags: [`cascade:${cascadeId}`, `workflow:${cascadeId}`] }
   )
 
   const publicAccessToken = await triggerAuth.createPublicToken({

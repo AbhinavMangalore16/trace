@@ -11,3 +11,8 @@ export function generateCascadeSlug(): string {
     style: "lowerCase",
   })
 }
+
+export { interpolate, getByPath } from "./utils/interpolate"
+export { formatTokensForDisplay } from "./utils/format-tokens"
+
+

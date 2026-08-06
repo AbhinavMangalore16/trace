@@ -34,7 +34,10 @@ export function Navigator({ cascades, createCascadeAction }: NavigatorProps) {
     startTransition(async () => {
       try {
         await createCascadeAction(name)
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+          return
+        }
         toast.error("Failed to create cascade")
       }
     })

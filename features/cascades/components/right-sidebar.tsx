@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useTheme } from "next-themes"
-import { useReactFlow, useStore } from "@xyflow/react"
+import { useReactFlow, useStore, useNodes } from "@xyflow/react"
 import { useRealtimeRun } from "@trigger.dev/react-hooks"
 import {
   MoreHorizontal,
@@ -44,6 +44,8 @@ import { cn } from "@/lib/utils"
 import { runCascadeAction, deleteCascadeAction, cancelCascadeRunAction } from "@/features/cascades/actions"
 import { graphDFSToposort } from "@/features/cascades/utils/graph-dfs-toposort"
 import type { runCascadeDomino } from "@/features/cascades/tasks/run-cascade"
+import { useUpstreamConnections } from "@/features/cascades/hooks"
+import { formatTokensForDisplay } from "@/features/cascades/utils"
 import {
   DominoRegistry,
   type DominoDefinition,
@@ -105,10 +107,12 @@ function Field({
   field,
   value,
   onChange,
+  onFocus,
 }: {
   field: DominoField
   value: string
   onChange: (value: string) => void
+  onFocus?: () => void
 }) {
   if (field.multiline) {
     return (
@@ -117,6 +121,7 @@ function Field({
         value={value}
         placeholder={field.placeholder}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
         className="text-xs min-h-[80px] font-mono resize-y"
       />
     )
@@ -128,6 +133,7 @@ function Field({
       value={value}
       placeholder={field.placeholder}
       onChange={(e) => onChange(e.target.value)}
+      onFocus={onFocus}
       className="text-xs h-8"
     />
   )
@@ -135,6 +141,9 @@ function Field({
 
 function Inspector({ node }: { node: StepDominoType | undefined }) {
   const { updateNodeData } = useReactFlow<StepDominoType>()
+  const nodes = useNodes()
+  const [activeFieldKey, setActiveFieldKey] = React.useState<string | null>(null)
+  const upstreamOutputs = useUpstreamConnections(node)
 
   if (!node) {
     return (
@@ -155,29 +164,79 @@ function Inspector({ node }: { node: StepDominoType | undefined }) {
     )
   }
 
+  const handleInsertToken = (token: string) => {
+    if (!def.fields.length) return
+    const targetKey =
+      activeFieldKey && def.fields.some((f) => f.key === activeFieldKey)
+        ? activeFieldKey
+        : def.fields[0].key
+
+    const currentValue = values[targetKey] ?? ""
+    const newValue = currentValue ? `${currentValue} ${token}` : token
+
+    updateNodeData(node.id, {
+      values: { ...values, [targetKey]: newValue },
+    })
+  }
+
   return (
     <Section title={title || def.label} icon={<NodeIcon type={type} />}>
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-4 p-3">
         {def.fields.length === 0 ? (
           <p className="text-xs text-muted-foreground">No configurable properties for this domino.</p>
         ) : (
-          def.fields.map((field) => (
-            <div key={field.key} className="flex flex-col gap-1.5">
-              <Label htmlFor={field.key} className="text-xs">
-                {field.label}
-                {field.required && <span className="text-destructive">*</span>}
-              </Label>
-              <Field
-                field={field}
-                value={values[field.key] ?? ""}
-                onChange={(value) => {
-                  updateNodeData(node.id, {
-                    values: { ...values, [field.key]: value },
-                  })
-                }}
-              />
+          <div className="flex flex-col gap-3">
+            {def.fields.map((field) => {
+              const val = values[field.key] ?? ""
+              return (
+                <div key={field.key} className="flex flex-col gap-1.5">
+                  <Label htmlFor={field.key} className="text-xs">
+                    {field.label}
+                    {field.required && <span className="text-destructive">*</span>}
+                  </Label>
+                  <Field
+                    field={field}
+                    value={val}
+                    onFocus={() => setActiveFieldKey(field.key)}
+                    onChange={(value) => {
+                      updateNodeData(node.id, {
+                        values: { ...values, [field.key]: value },
+                      })
+                    }}
+                  />
+                  {val && val.includes("{{") && (
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded-md font-mono truncate">
+                      <span className="font-semibold text-purple-400 shrink-0">Display:</span>
+                      <span className="truncate">{formatTokensForDisplay(val, nodes)}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {upstreamOutputs.length > 0 && (
+          <div className="flex flex-col gap-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+              <Sparkles className="size-3 text-purple-500" />
+              <span>Connections</span>
             </div>
-          ))
+            <div className="flex flex-wrap gap-1.5">
+              {upstreamOutputs.map((out) => (
+                <button
+                  key={`${out.nodeId}-${out.path}`}
+                  type="button"
+                  onClick={() => handleInsertToken(out.token)}
+                  className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] font-medium hover:bg-accent hover:border-accent-foreground/20 text-foreground transition-colors cursor-pointer group"
+                  title={`Insert ${out.token}`}
+                >
+                  <NodeIcon type={out.nodeType as DominoType} className="size-4 rounded-xs" />
+                  <span className="truncate max-w-[180px]">{out.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </Section>
@@ -226,6 +285,12 @@ function Palette() {
       position,
       data: { type, kind: def.kind, title, values: {} },
     })
+
+    try {
+      const audio = new Audio("/sounds/add.mp3")
+      audio.volume = 0.5
+      audio.play().catch(() => {})
+    } catch {}
 
     toast.success(`Added ${title} domino`)
   }
@@ -295,7 +360,10 @@ function ActionsMenu({ cascadeId }: { cascadeId?: string }) {
               try {
                 await deleteCascadeAction(cascadeId)
                 toast.success("Cascade deleted")
-              } catch (err: unknown) {
+              } catch (err: any) {
+                if (err?.digest?.startsWith("NEXT_REDIRECT")) {
+                  return
+                }
                 const message = err instanceof Error ? err.message : "Failed to delete cascade"
                 toast.error(message)
               }
@@ -422,8 +490,8 @@ export function RightSidebar({ cascadeId }: RightSidebarProps) {
       case "WAITING_ON_CONNECTIONS":
         return {
           label: "Executing",
-          badgeClass: "bg-blue-500/10 border-blue-500/30 text-blue-500 dark:text-blue-400",
-          icon: <Loader2 className="size-3.5 animate-spin text-blue-500 dark:text-blue-400" />,
+          badgeClass: "bg-purple-500/10 border-purple-500/30 text-purple-500 dark:text-purple-400",
+          icon: <Loader2 className="size-3.5 animate-spin text-purple-500 dark:text-purple-400" />,
         }
       case "COMPLETED":
         return {
